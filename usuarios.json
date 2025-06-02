@@ -1,0 +1,14 @@
+[
+    {
+        "usuario": "admin",
+        "senha": "$2y$10$7nLsu7aftHi0EJPS93eaXuCgJziNV97mwXlvq2t8m9Htw8bU6jHnK"
+    },
+    {
+        "usuario": "junior",
+        "senha": "$2y$10$ZKw0Q2dr9f1pwRnaL3rqyuFZSPVhku5RWLdwBZEoFXmLy7O5eVB3e"
+    },
+    {
+        "usuario": "pacheco",
+        "senha": "$2y$10$NWV39AKrbqecSTLjvn816erb7OxB8Sl4gaPF0V84r8ZB5Jr4G8c8W"
+    }
+]

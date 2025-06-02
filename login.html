@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Sistema Integrado de Gerenciamento</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --color-primary: #2c3e50;
+            --color-secondary: #ecf0f1;
+            --color-accent1: #3498db;
+            --color-accent2: #2ecc71;
+            --color-accent3: #e74c3c;
+            --color-accent4: #f39c12;
+            --color-text: #333;
+            --color-text-light: #7f8c8d;
+            --transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f6f8fa 0%, #e9eef2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--color-text);
+        }
+
+        .login-container {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .login-container h1 {
+            margin-bottom: 1.5rem;
+            color: var(--color-primary);
+        }
+
+        .login-container .input-group {
+            margin-bottom: 1.5rem;
+            text-align: left;
+        }
+
+        .login-container .input-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--color-text-light);
+        }
+
+        .login-container .input-group input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--color-secondary);
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+
+        .login-container .input-group input:focus {
+            border-color: var(--color-accent1);
+            outline: none;
+        }
+
+        .login-container .submit-btn {
+            background-color: var(--color-primary);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .login-container .submit-btn:hover {
+            background-color: var(--color-accent1);
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <h1>Login</h1>
+        <form id="loginForm" method="POST" action="autenticar.php">
+            <div class="input-group">
+                <label for="username">Usuário</label>
+                <input type="text" id="username" name="username" required>
+            </div>
+            <div class="input-group">
+                <label for="password">Senha</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            <button type="submit" class="submit-btn">Entrar</button>
+        </form>
+    </div>
+</body>
+</html>

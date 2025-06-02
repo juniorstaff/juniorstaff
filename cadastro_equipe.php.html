@@ -1,0 +1,393 @@
+<?php
+// Conexão com o banco de dados
+$servername = "localhost";
+$username = "root";
+$password = ""; // ajuste conforme necessário
+$dbname = "sistema_servicos";
+
+// Cria conexão
+$conn = new mysqli($servername, $username, $password, $dbname);
+
+// Checa conexão
+if ($conn->connect_error) {
+    die("Falha na conexão: " . $conn->connect_error);
+}
+
+// Recebe dados do formulário via POST
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $nome = trim($_POST['nome']);
+    $cargo = trim($_POST['cargo']);
+    $email = trim($_POST['email']);
+    $telefone = trim($_POST['telefone']);
+    $departamento = trim($_POST['departamento']);
+
+    // Simples validação server-side
+    $errors = [];
+    if (strlen($nome) < 3) $errors[] = "O nome deve ter pelo menos 3 caracteres.";
+    if (strlen($cargo) < 2) $errors[] = "O cargo deve ser informado.";
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) $errors[] = "Email inválido.";
+    $telefone_digits = preg_replace('/\D/', '', $telefone);
+    if (strlen($telefone_digits) < 10 || strlen($telefone_digits) > 11) $errors[] = "Telefone inválido.";
+
+    if (empty($errors)) {
+        // Prepara e faz o insert
+        $stmt = $conn->prepare("INSERT INTO equipe (nome, cargo, email, telefone, departamento) VALUES (?, ?, ?, ?, ?)");
+        $stmt->bind_param("sssss", $nome, $cargo, $email, $telefone, $departamento);
+
+        if ($stmt->execute()) {
+            // Sucesso: retorna ao formulário com feedback
+            header("Location: cadastro_equipe.php?success=1");
+            exit();
+        } else {
+            $error_message = "Erro ao cadastrar: " . $stmt->error;
+        }
+
+        $stmt->close();
+    }
+}
+
+$conn->close();
+?>
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Formulário de cadastro de membros da equipe">
+    <title>Cadastro de Equipe</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --primary-hover: #1d4ed8;
+            --text-color: #333;
+            --light-gray: #f3f4f6;
+            --border-color: #d1d5db;
+            --error-color: #ef4444;
+            --success-color: #10b981;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: var(--light-gray);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: var(--text-color);
+        }
+        .form-container {
+            background-color: #fff;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            width: 100%;
+            max-width: 550px;
+            animation: fadeIn 0.5s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        h1 {
+            text-align: center;
+            color: var(--text-color);
+            font-weight: bold;
+            margin-bottom: 1.5rem;
+            font-size: 1.8rem;
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 10px;
+        }
+        .btn-voltar {
+            display: inline-block;
+            margin-bottom: 20px;
+            background: var(--primary-color);
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: background 0.2s, transform 0.2s;
+        }
+        .btn-voltar:hover {
+            background: var(--primary-hover);
+            transform: translateY(-2px);
+            text-decoration: none;
+            color: #fff;
+        }
+        .btn-voltar i {
+            margin-right: 8px;
+        }
+        .form-group { margin-bottom: 1.2rem; position: relative; }
+        label { display: block; font-weight: 600; color: #555; margin-bottom: 0.5rem; }
+        .input-wrapper { position: relative; }
+        .input-wrapper i {
+            position: absolute;
+            top: 50%;
+            left: 12px;
+            transform: translateY(-50%);
+            color: #666;
+        }
+        input {
+            width: 100%;
+            padding: 12px 12px 12px 40px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+        }
+        input.error { border-color: var(--error-color); }
+        .error-message {
+            color: var(--error-color);
+            font-size: 0.85rem;
+            margin-top: 0.5rem;
+            display: none;
+        }
+        .error-message.visible { display: block; }
+        .success-message {
+            background-color: rgba(16, 185, 129, 0.1);
+            color: var(--success-color);
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            display: none;
+            text-align: center;
+        }
+        .success-message.visible { display: block; }
+        .actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 1.5rem;
+        }
+        button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        button[type="submit"] {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        button[type="submit"]:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+        }
+        button[type="reset"] {
+            background-color: transparent;
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+        }
+        button[type="reset"]:hover { background-color: var(--light-gray); }
+        .required::after { content: " *"; color: var(--error-color); }
+        @media (max-width: 600px) {
+            .form-container { padding: 1.5rem; border-radius: 8px; }
+            .actions { flex-direction: column; }
+            h1 { font-size: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="form-container">
+    <a href="index.php" class="btn-voltar"><i class="fas fa-arrow-left"></i> Voltar ao Sistema</a>
+    <?php if (isset($_GET['success'])): ?>
+        <div class="success-message visible" id="success-message">
+            Membro cadastrado com sucesso!
+        </div>
+    <?php endif; ?>
+    <?php if (!empty($errors)): ?>
+        <div class="error-message visible">
+            <?php foreach ($errors as $err) echo "<div>$err</div>"; ?>
+        </div>
+    <?php elseif (isset($error_message)): ?>
+        <div class="error-message visible"><?= $error_message ?></div>
+    <?php endif; ?>
+    <h1>Cadastro de Equipe</h1>
+    <form action="cadastro_equipe.php" method="POST" id="cadastro-form" novalidate>
+        <div class="form-group">
+            <label for="nome" class="required">Nome Completo</label>
+            <div class="input-wrapper">
+                <i class="fas fa-user"></i>
+                <input
+                    type="text"
+                    id="nome"
+                    name="nome"
+                    required
+                    minlength="3"
+                    maxlength="100"
+                    placeholder="Digite o nome completo"
+                    aria-describedby="nome-error"
+                    value="<?= htmlspecialchars($_POST['nome'] ?? '') ?>"
+                >
+            </div>
+            <small class="error-message" id="nome-error">Por favor, insira um nome válido.</small>
+        </div>
+        <div class="form-group">
+            <label for="cargo" class="required">Cargo</label>
+            <div class="input-wrapper">
+                <i class="fas fa-briefcase"></i>
+                <input
+                    type="text"
+                    id="cargo"
+                    name="cargo"
+                    required
+                    minlength="2"
+                    placeholder="Digite o cargo ocupado"
+                    aria-describedby="cargo-error"
+                    value="<?= htmlspecialchars($_POST['cargo'] ?? '') ?>"
+                >
+            </div>
+            <small class="error-message" id="cargo-error">Por favor, informe o cargo.</small>
+        </div>
+        <div class="form-group">
+            <label for="email" class="required">Email Profissional</label>
+            <div class="input-wrapper">
+                <i class="fas fa-envelope"></i>
+                <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    required
+                    placeholder="exemplo@empresa.com.br"
+                    pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$"
+                    aria-describedby="email-error"
+                    value="<?= htmlspecialchars($_POST['email'] ?? '') ?>"
+                >
+            </div>
+            <small class="error-message" id="email-error">Por favor, insira um email válido.</small>
+        </div>
+        <div class="form-group">
+            <label for="telefone" class="required">Telefone</label>
+            <div class="input-wrapper">
+                <i class="fas fa-phone"></i>
+                <input
+                    type="tel"
+                    id="telefone"
+                    name="telefone"
+                    required
+                    placeholder="(00) 00000-0000"
+                    aria-describedby="telefone-error"
+                    value="<?= htmlspecialchars($_POST['telefone'] ?? '') ?>"
+                >
+            </div>
+            <small class="error-message" id="telefone-error">Por favor, insira um número de telefone válido.</small>
+        </div>
+        <div class="form-group">
+            <label for="departamento">Departamento</label>
+            <div class="input-wrapper">
+                <i class="fas fa-building"></i>
+                <input
+                    type="text"
+                    id="departamento"
+                    name="departamento"
+                    placeholder="Departamento (opcional)"
+                    value="<?= htmlspecialchars($_POST['departamento'] ?? '') ?>"
+                >
+            </div>
+        </div>
+        <div class="actions">
+            <button type="submit">
+                <i class="fas fa-save"></i> Cadastrar
+            </button>
+            <button type="reset">
+                <i class="fas fa-undo"></i> Limpar
+            </button>
+        </div>
+    </form>
+</div>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('cadastro-form');
+
+        // Máscara para telefone
+        const telefoneInput = document.getElementById('telefone');
+        telefoneInput.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length > 11) value = value.slice(0, 11);
+            if (value.length > 0) {
+                value = '(' + value;
+                if (value.length > 3) {
+                    value = value.slice(0, 3) + ') ' + value.slice(3);
+                }
+                if (value.length > 10) {
+                    value = value.slice(0, 10) + '-' + value.slice(10);
+                }
+            }
+            e.target.value = value;
+        });
+
+        // Validação front-end
+        form.addEventListener('submit', function(e) {
+            let isValid = true;
+
+            // Validar Nome
+            const nome = document.getElementById('nome');
+            if (nome.value.trim().length < 3) {
+                showError(nome, 'nome-error', 'O nome deve ter pelo menos 3 caracteres.');
+                isValid = false;
+            } else {
+                hideError(nome, 'nome-error');
+            }
+
+            // Validar Cargo
+            const cargo = document.getElementById('cargo');
+            if (cargo.value.trim().length < 2) {
+                showError(cargo, 'cargo-error', 'Por favor, informe o cargo.');
+                isValid = false;
+            } else {
+                hideError(cargo, 'cargo-error');
+            }
+
+            // Validar Email
+            const email = document.getElementById('email');
+            const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+            if (!emailRegex.test(email.value)) {
+                showError(email, 'email-error', 'Por favor, insira um email válido.');
+                isValid = false;
+            } else {
+                hideError(email, 'email-error');
+            }
+
+            // Validar Telefone
+            const telefone = document.getElementById('telefone');
+            const telefoneDigits = telefone.value.replace(/\D/g, '');
+            if (telefoneDigits.length < 10 || telefoneDigits.length > 11) {
+                showError(telefone, 'telefone-error', 'Insira um telefone válido com DDD.');
+                isValid = false;
+            } else {
+                hideError(telefone, 'telefone-error');
+            }
+
+            if (!isValid) {
+                e.preventDefault();
+            }
+        });
+
+        function showError(input, errorId, message) {
+            input.classList.add('error');
+            const errorElement = document.getElementById(errorId);
+            errorElement.textContent = message;
+            errorElement.classList.add('visible');
+        }
+
+        function hideError(input, errorId) {
+            input.classList.remove('error');
+            document.getElementById(errorId).classList.remove('visible');
+        }
+    });
+</script>
+</body>
+</html>
