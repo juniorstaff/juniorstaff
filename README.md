@@ -59,7 +59,7 @@ composer.lock
 
 1. Clone o repositório:
     ```sh
-    git clone https://github.com/seuusuario/seurepo.git
+    git clone https://juniorstaff.github.io/juniorstaff/
     ```
 2. Instale as dependências:
     ```sh
